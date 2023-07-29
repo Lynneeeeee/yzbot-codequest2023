@@ -2,7 +2,8 @@ import random
 
 import comms
 from object_types import ObjectTypes
-
+import sys
+import math
 
 class Game:
     """
@@ -18,6 +19,9 @@ class Game:
     def __init__(self):
         tank_id_message: dict = comms.read_message()
         self.tank_id = tank_id_message["message"]["your-tank-id"]
+        self.enemy_id = tank_id_message["message"]["enemy-tank-id"]
+
+        self.last_path =None
 
         self.current_turn_message = None
 
@@ -56,6 +60,8 @@ class Game:
         self.width = biggest_x
         self.height = biggest_y
 
+        print(self.objects, file = sys.stderr)
+
     def read_next_turn_data(self):
         """
         It's our turn! Read what the game has sent us and update the game info.
@@ -90,8 +96,53 @@ class Game:
 
         # Write your code here... For demonstration, this bot just shoots randomly every turn.
 
-        comms.post_message({
-            "shoot": random.uniform(0, random.randint(1, 360))
-        })
+        all_objects_ids = self.objects.keys()
+        print(all_objects_ids , file = sys.stderr)
+        enemy_tank = self.objects[self.enemy_id]
+        print(enemy_tank, file = sys.stderr)
+
+        enemy_tank_pos = enemy_tank["position"]
+
+        my_response = {}
+        if self.last_path is None or self.last_path != enemy_tank_pos:
+            my_response = {
+                # "shoot": random.uniform(0, random.randint(1, 360)),
+                # "move": 45
+                "path": enemy_tank_pos
+            }
+            self.last_path = enemy_tank_pos
+
+        my_tank = self.objects[self.tank_id]
+        my_tank_pos = my_tank["position"]
+
+        distance = abs(my_tank_pos[0]- enemy_tank_pos[0]) + abs(my_tank_pos[1]- enemy_tank_pos[1])
+        
+        if distance < 500:
+            angle = math.atan2(enemy_tank_pos[1]-enemy_tank_pos[0], my_tank_pos[1]-my_tank_pos[0]) *180/math.pi
+            my_response.update({"shoot": angle})
+
+        # print(angle, file = sys.stderr)    
+        comms.post_message(my_response)
+
+    # def cal_angle(self):
+    #     """
+        
+    #     """
+    #     tank_1 = self.objects["updated_objects"]["tank-1"]
+    #     tank_2 = self.objects["updated_objects"]["tank-2"]
+    #     bullet = self.objects["updated_objects"]["bullet-1"]
+    #     x = tank_1["position"][0]
+    #     y = tank_1["position"][1]
+    #     a = tank_2["position"][0]
+    #     b = tank_2["position"][1]
+
+    #     v_tank = math.sqrt(tank_1["velocity"][0]**2 + tank_1["velocity"][1]**2)
+    #     v_bullet = math.sqrt(bullet["velocity"][0]**2 + bullet["velocity"][1]**2)
+
+    #     time = 2 
+
+    #     angle = math.degrees(math.atan (abs(x-a) + v_tank*time /abs(y-b)))
+        
+
 
 
