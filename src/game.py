@@ -156,7 +156,7 @@ class Game:
                 our_next_pos_y = our_tank["velocity"][1] * 0.1 + our_tank_pos_y
                 break   # break the while loop. u have no choice but to be hit so might as well go in the direction we want
 
-            if cond:
+            if cond or bullet == bullet_array[-1]:
                 hit = False
 
         
@@ -164,7 +164,7 @@ class Game:
                     
 
 
-
+        self.path = [our_next_pos_x, our_next_pos_y]       
 
 
 
@@ -183,9 +183,9 @@ class Game:
         # Write your code here... For demonstration, this bot just shoots randomly every turn.
 
         comms.post_message({
-            "shoot": random.uniform(0, random.randint(1, 360)),
-            "move": 0,
-            "path": 0
+            # "shoot": random.uniform(0, random.randint(1, 360)),
+            # "move": 0,
+            "path": self.path
         })
 
 
