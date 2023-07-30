@@ -260,8 +260,76 @@ class Game:
 
         # Write your code here... For demonstration, this bot just shoots randomly every turn.
 
-        comms.post_message({
-            # "shoot": random.uniform(0, random.randint(1, 360))
-            "path": self.path,
-            "shoot": random.uniform(0, random.randint(1, 360))
-        })
+        all_objects_ids = self.objects.keys()
+        print(all_objects_ids , file = sys.stderr)
+        enemy_tank = self.objects[self.enemy_id]
+        print(enemy_tank, file = sys.stderr)
+
+        enemy_tank_pos = enemy_tank["position"]
+
+        my_response = {}
+        if self.last_path is None or self.last_path != enemy_tank_pos:
+            my_response = {"path": enemy_tank_pos}
+            self.last_path = enemy_tank_pos
+
+        my_tank = self.objects[self.tank_id]
+        my_tank_pos = my_tank["position"]
+
+        distance = abs(my_tank_pos[0]- enemy_tank_pos[0]) + abs(my_tank_pos[1]- enemy_tank_pos[1])
+        # if distance < 500:
+        angle = math.atan2(enemy_tank_pos[1] - my_tank_pos[1], enemy_tank_pos[0] - my_tank_pos[0]) * 180 / math.pi
+        # angle = (angle + 180) % 360
+        my_response.update({"shoot": angle})
+
+        # print(angle, file = sys.stderr)    
+        comms.post_message(my_response)
+
+
+# passable = set([(0, 0), (1, 0), (0, 1), (1, 1)]) 
+# obstacles = set([(2, 2), (3, 3)]) 
+
+# # move: up, down, left, right
+# directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+# def heuristic(p1, p2):
+#     return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
+# def time_a_star(start, goal, avoid, speed):
+#     open_list = [(0, start, 0)]  
+#     came_from = {}  # store previous positions
+#     g_score = {start: 0}  # store time of reach every position
+
+#     while open_list:
+#         current_time, current_pos, current_arrival_time = heapq.heappop(open_list)
+
+#         if current_pos == goal:
+#             # reach the goal position
+#             path = [goal]
+#             while current_pos in came_from:
+#                 current_pos = came_from[current_pos]
+#                 path.append(current_pos)
+#             return path[::-1]
+        
+#         for dx, dy in directions:
+#             next_pos = (current_pos[0] + dx, current_pos[1] + dy)
+
+#             if next_pos in passable and next_pos not in avoid:
+#                 # calculate time of reaching next position
+#                 next_arrival_time = current_arrival_time + 1.0 / speed
+
+#                 # if next position already visited
+#                 if next_pos in g_score and next_arrival_time >= g_score[next_pos]:
+#                     continue
+
+#                 # update reach time & previous position
+#                 g_score[next_pos] = next_arrival_time
+#                 came_from[next_pos] = current_pos
+
+#                 # calculate tims
+#                 h = heuristic(next_pos, goal) / speed
+#                 heapq.heappush(open_list, (next_arrival_time + h, next_pos, next_arrival_time))
+
+#     # if didn't find any
+#     return []
+        
+
