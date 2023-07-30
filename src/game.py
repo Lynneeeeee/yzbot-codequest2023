@@ -50,7 +50,7 @@ class Game:
         for game_object in self.objects.values():
             if game_object["type"] == ObjectTypes.BOUNDARY.value:
                 boundaries.append(game_object)
-
+            # add wall positions
             if game_object["type"] == ObjectTypes.WALL.value:
                 self.wall.append(game_object["position"])
 
@@ -117,11 +117,10 @@ class Game:
         my_tank_pos = my_tank["position"]
 
         distance = abs(my_tank_pos[0]- enemy_tank_pos[0]) + abs(my_tank_pos[1]- enemy_tank_pos[1])
-        if distance < 500:
-            angle = math.atan2(enemy_tank_pos[1] - my_tank_pos[1], enemy_tank_pos[0] - my_tank_pos[0]) * 180 / math.pi
-            angle = (angle + 180) % 360
-            my_response.update({"shoot": angle})
-            print(angle)
+        # if distance < 500:
+        angle = math.atan2(enemy_tank_pos[1] - my_tank_pos[1], enemy_tank_pos[0] - my_tank_pos[0]) * 180 / math.pi
+        # angle = (angle + 180) % 360
+        my_response.update({"shoot": angle})
 
         # print(angle, file = sys.stderr)    
         comms.post_message(my_response)
