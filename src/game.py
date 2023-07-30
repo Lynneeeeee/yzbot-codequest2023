@@ -93,14 +93,17 @@ class Game:
         # new powerup is now spawned, etc.
         self.objects.update(self.current_turn_message["message"]["updated_objects"])
         
+        # our_next_pos_x, our_next_pos_y = self.width //2, self.height // 2
+        c = True # this means we are trying to dodge something
 
         try:        
             our_tank = self.current_turn_message["message"]["updated_objects"][self.tank_id]
             self.our_tank_pos_x = our_tank["position"][0]
             self.our_tank_pos_y = our_tank["position"][1]
         except:
-            # our_next_pos_x, our_tank_pos_y = self.our_tank_pos_x, self.our_tank_pos_y
-            # self.our_tank_pos_x, self.our_tank_pos_y = our_next_pos_x, our_tank_pos_y
+            our_next_pos_x, our_tank_pos_y = self.our_tank_pos_x, self.our_tank_pos_y
+            self.our_tank_pos_x, self.our_tank_pos_y = our_next_pos_x, our_tank_pos_y
+            c = False
             pass
 
         # top left, bottom_left, bottom_right, top_right
@@ -127,8 +130,12 @@ class Game:
 
                     # calculating the bullets next location
                     # assuming that the bullets velocity is units/s and each tick gives us 0.1s to calculate
-                    # we can estimate that the bullets position for the next tick will be it's velocity * 0.1
-                    bullet_next_pos = ["bullet", bullet_velocity_x * 0.1 + bullet_pos_x, bullet_velocity_y * 0.1 + bullet_pos_y]
+                    # we can estimate that the bullets position for the next tick will be it's velocity * 0.25
+                    bullet_next_pos = ["bullet", bullet_velocity_x * 0.25 + bullet_pos_x, bullet_velocity_y * 0.25 + bullet_pos_y]
+                    # the velocity units dont match up with actual difference in position. so i just manually calculated dist travelled ~= 7.83
+                    
+                    # angle = math.atan(bullet_velocity_y / bullet_velocity_x)
+                    # bullet_next_pos = ["bullet", 7.83 * math.cos(angle) + bullet_pos_x, 7.83 * math.sin(angle) + bullet_pos_y]
                     bullet_array.append(bullet_next_pos)
 
         bullet_array = bullet_array + self.wall
@@ -141,9 +148,14 @@ class Game:
         # self.enemy_pos_x, self.enemy_pos_y = self.path[0], self.path[1]
 
         try:    # if this fails its because our tank isnt moving 
-            our_next_pos_x = our_tank["velocity"][0] * 0.1 + self.our_tank_pos_x
-            our_next_pos_y = our_tank["velocity"][1] * 0.1 + self.our_tank_pos_y
+
+            # our tank is moving approx 2.36 units per tick. manual calculation
             tangent = our_tank["velocity"][1] / our_tank["velocity"][0]
+            our_next_pos_x = our_tank["velocity"][0] * 0.25 + self.our_tank_pos_x
+            our_next_pos_y = our_tank["velocity"][1] * 0.25 + self.our_tank_pos_y
+            tank_ang = math.atan(tangent)
+            # our_next_pos_x = 2.36 * math.cos(tank_ang) + self.our_tank_pos_x
+            # our_next_pos_y = 2.36 * math.sin(tank_ang) + self.our_tank_pos_y
         except:
             our_next_pos_x = self.our_tank_pos_x
             our_next_pos_y = self.our_tank_pos_y
@@ -176,15 +188,15 @@ class Game:
                         if count != 0:  # if count = 0, means we've exhausted all our paths
                             if plus_minus == True:
                                 tangent = math.atan(tangent) + math.pi/2
-                                our_next_pos_x = 141.43 * math.cos(tangent) * 0.1 + self.our_tank_pos_x
-                                our_next_pos_y = 141.43 * math.sin(tangent) * 0.1 + self.our_tank_pos_y
+                                our_next_pos_x = 141.42 * math.cos(tangent) * 0.25 + self.our_tank_pos_x
+                                our_next_pos_y = 141.42  * math.sin(tangent) * 0.25 + self.our_tank_pos_y
 
                                 plus_minus = False
                                 count -= 1
                             else:
                                 tangent = math.atan(tangent) - math.pi/2
-                                our_next_pos_x = 141.43 * math.cos(tangent) * 0.1 + self.our_tank_pos_x
-                                our_next_pos_y = 141.43 * math.sin(tangent) * 0.1 + self.our_tank_pos_y
+                                our_next_pos_x = 141.42  * math.cos(tangent) * 0.25 + self.our_tank_pos_x
+                                our_next_pos_y = 141.42  * math.sin(tangent) * 0.25 + self.our_tank_pos_y
 
                                 plus_minus = True
                                 count -= 1
@@ -206,23 +218,26 @@ class Game:
                         if count != 0:  # if count = 0, means we've exhausted all our paths
                             if plus_minus == True:
                                 tangent = math.atan(tangent) + math.pi/2
-                                our_next_pos_x = 141.43 * math.cos(tangent) * 0.1 + self.our_tank_pos_x
-                                our_next_pos_y = 141.43 * math.sin(tangent) * 0.1 + self.our_tank_pos_y
+                                our_next_pos_x = 141.42 * math.cos(tangent) * 0.25 + self.our_tank_pos_x
+                                our_next_pos_y = 141.42 * math.sin(tangent) * 0.25 + self.our_tank_pos_y
 
                                 plus_minus = False
                                 count -= 1
                             else:
                                 tangent = math.atan(tangent) - math.pi/2
-                                our_next_pos_x = 141.43 * math.cos(tangent) * 0.1 + self.our_tank_pos_x
-                                our_next_pos_y = 141.43 * math.sin(tangent) * 0.1 + self.our_tank_pos_y
+                                our_next_pos_x = 141.42 * math.cos(tangent) * 0.25 + self.our_tank_pos_x
+                                our_next_pos_y = 141.42 * math.sin(tangent) * 0.25 + self.our_tank_pos_y
 
                                 plus_minus = True
                                 count -= 1
                         break
 
             if count == 0:
-                our_next_pos_x = our_tank["velocity"][0] * 0.1 + self.our_tank_pos_x
-                our_next_pos_y = our_tank["velocity"][1] * 0.1 + self.our_tank_pos_y
+                # our_next_pos_x = our_tank["velocity"][0] * 0.1 + self.our_tank_pos_x
+                # our_next_pos_y = our_tank["velocity"][1] * 0.1 + self.our_tank_pos_y
+                our_next_pos_x = 141.42 * math.cos(tank_ang) * 0.25 + self.our_tank_pos_x
+                our_next_pos_y = 141.42 * math.sin(tank_ang) * 0.25 + self.our_tank_pos_y
+                c = False
                 break   # break the while loop. u have no choice but to be hit so might as well go in the direction we want
 
             if cond or bullet == bullet_array[-1]:
@@ -231,9 +246,10 @@ class Game:
         # except:
         #     our_next_pos_x, our_next_pos_y = self.enemy_pos_x, self.enemy_pos_y
 
-
-        # self.path = [our_next_pos_x, our_next_pos_y]             
-        self.path = [self.width //2, self.height // 2]
+        if c:
+            self.path = [our_next_pos_x, our_next_pos_y]        
+        else:     
+            self.path = [self.width //2, self.height // 2]
 
         return True
 
